@@ -8,15 +8,20 @@ import java.io.PrintWriter;
 
 public class SendToComputerThread implements Runnable {
     private PrintWriter out;
-    private String message;
+    private String messageFrom;
+    private String messageContent;
 
-    public SendToComputerThread(PrintWriter out, String message){
+    public SendToComputerThread(PrintWriter out, String messageFrom, String messageContent){
         this.out = out;
-        this.message = message;
+        this.messageFrom = messageFrom;
+        this.messageContent = messageContent;
     }
+
     @Override
     public void run() {
-        out.println(message);
+        out.println("DISPLAY");
+        out.println(messageFrom);
+        out.println(messageContent);
         out.flush();
     }
 }
