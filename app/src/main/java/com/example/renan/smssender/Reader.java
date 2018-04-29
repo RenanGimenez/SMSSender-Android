@@ -36,7 +36,11 @@ public class Reader implements Runnable {
 
     private void send() throws Exception {
         final String NUMBER = in.readLine();
-        final String MESSAGE = in.readLine();
+        StringBuilder messageBuilder = new StringBuilder();
+        String line;
+        while(!(line = in.readLine()).equals("END_OF_MESSAGE"))
+            messageBuilder.append(line+"\n");
+        final String MESSAGE = messageBuilder.toString().substring(0, messageBuilder.length()-1);
         mainActivity.runOnUiThread(new Runnable() {
             public void run() {
                 mainActivity.resetDisplay();

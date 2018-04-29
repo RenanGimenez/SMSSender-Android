@@ -4,9 +4,10 @@ package com.example.renan.smssender;
  * Created by renan on 09/01/2018.
  */
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public class Contact {
+public class Contact implements Serializable{
     private static final String NAME_USER = "USER";
     private String name;
     private String numTel;
@@ -40,6 +41,10 @@ public class Contact {
 
     public boolean isUser() {
         return name.equals(NAME_USER);
+    }
+
+    public String toString() {
+        return "name: "+name+" telNum: "+numTel;
     }
 
 }

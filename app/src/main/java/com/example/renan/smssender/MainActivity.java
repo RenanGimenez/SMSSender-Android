@@ -19,6 +19,8 @@ import android.widget.Toast;
 
 import java.util.LinkedList;
 
+import static android.Manifest.permission.ACCESS_WIFI_STATE;
+import static android.Manifest.permission.READ_CONTACTS;
 import static android.Manifest.permission.SEND_SMS;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,11 +38,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         activity = this;
 
+
         try {
-            //CharSequence ip = getIpAddress();
+           // CharSequence ip = getIpAddress();
            // code.setText(ip);
             runServer();
             checkSelfPermission(SEND_SMS);
+            checkSelfPermission(READ_CONTACTS);
+            checkSelfPermission(ACCESS_WIFI_STATE);
             if (ContextCompat.checkSelfPermission(this,
                     Manifest.permission.READ_CONTACTS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -52,12 +57,14 @@ public class MainActivity extends AppCompatActivity {
                     //Vous pouvez aussi expliquer à l'utilisateur pourquoi
                     //cette permission est nécessaire et la redemander
                 } else {
-                    //Sinon demander la permission
+                    //Sinon demander la permissiona
                     ActivityCompat.requestPermissions(this,
                             new String[]{Manifest.permission.READ_CONTACTS},
                             MY_PERMISSIONS_REQUEST_READ_CONTACTS);
                 }
             }
+
+
         } catch (Exception e){
             e.printStackTrace();
 
@@ -65,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
         WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
         String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+
 
         TextView code = (TextView)findViewById(R.id.tVCode);
         code.setText(IPtoCode(ip));
@@ -128,9 +136,7 @@ public class MainActivity extends AppCompatActivity {
     public void send(String number, String message) {
         this.number = number;
         this.message = message;
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.SEND_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.SEND_SMS)) {
             } else {
@@ -138,14 +144,19 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.SEND_SMS},
                         MY_PERMISSIONS_REQUEST_SEND_SMS);
             }
+        } else {
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(number, null, message, null, null);
+            Toast.makeText(getApplicationContext(), "SMS sent.",
+                    Toast.LENGTH_LONG).show();
         }
+
     }
     @Override
     public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_SEND_SMS: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     SmsManager smsManager = SmsManager.getDefault();
                     smsManager.sendTextMessage(number, null, message, null, null);
                     Toast.makeText(getApplicationContext(), "SMS sent.",
@@ -202,6 +213,8 @@ public class MainActivity extends AppCompatActivity {
         if(cur!=null){
             cur.close();
         }
+
+
         return contacts;
     }
 

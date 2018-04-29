@@ -1,10 +1,12 @@
 package com.example.renan.smssender;
 
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,9 +17,10 @@ import java.util.LinkedList;
  */
 
 class SocketServerThread implements Runnable {
-    private static final int PORT = 10000;
+    private static final int PORT = 10001;
     private static PrintWriter out;
     private static BufferedReader in;
+    private static ObjectOutputStream objectOut;
     private static MainActivity mainActivity;
 
     public SocketServerThread(){
@@ -30,20 +33,23 @@ class SocketServerThread implements Runnable {
         try {
             ServerSocket socketserver = new ServerSocket(PORT);
             raiseToast("I am ready to accept my favorite client!");
-            Socket socket = socketserver.accept();
-            mainActivity.runOnUiThread(new Runnable() {
-                public void run() {
-                    mainActivity.setConnectionState();
-                }
-            });
-            raiseToast("My favourite client just connected to my server! I'm proud :D");
+            while(true) {
+                Socket socket = socketserver.accept();
+                mainActivity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        mainActivity.setConnectionState();
+                    }
+                });
+                raiseToast("My favourite client just connected to my server! I'm proud :D");
 
-            out = new PrintWriter(socket.getOutputStream());
+                out = new PrintWriter(socket.getOutputStream(), false);
+                objectOut = new ObjectOutputStream(socket.getOutputStream());
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            new Thread(new Reader(in)).start();
+                new Thread(new Reader(in)).start();
 
-            sendContacts();
+               sendContacts();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,13 +58,21 @@ class SocketServerThread implements Runnable {
     private void sendContacts() {
         LinkedList<Contact> contactList  = mainActivity.getContactList();
         for (int i=0; i<contactList.size();++i){
-            if(contactList.get(i).getNumTel().equals("")){
+            Log.d("Contact", contactList.get(i).toString());
+            if(contactList.get(i).getNumTel().equals("") || contactList.get(i).getName().charAt(0) == '.'){
                 contactList.remove(i);
                 i--;
             }
         }
         out.println("CONTACT_LIST");
-        out.println(contactList);
+
+        out.println(contactList.size());
+        for (int i=0; i<contactList.size();++i){
+            out.println(contactList.get(i).getName());
+            out.println(contactList.get(i).getNumTel());
+        }
+            /*objectOut.writeObject(contactList);
+            objectOut.flush();*/
         out.flush();
     }
 
@@ -73,6 +87,8 @@ class SocketServerThread implements Runnable {
 
     }
     private void raiseToast(String message) {
+        Log.d("toast",message);
+
         final String MESSAGE = message;
         mainActivity.runOnUiThread(new Runnable() {
             public void run() {
