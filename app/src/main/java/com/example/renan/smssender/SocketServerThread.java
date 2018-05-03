@@ -98,7 +98,7 @@ class SocketServerThread implements Runnable {
         });
     }
 
-    public static void sendToComputer(String message){
-        new Thread(new SendToComputerThread(out, "TEST CELLPHONE", message)).start();
+    public static void sendToComputer(String messageFrom, String messageContent){
+       new Thread(new SendToComputerThread(out, messageFrom, messageContent)).start();
     }
 }

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,19 +14,23 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
+import android.telephony.SmsMessage;
 import android.text.format.Formatter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static android.Manifest.permission.READ_CONTACTS;
+import static android.Manifest.permission.READ_SMS;
+import static android.Manifest.permission.RECEIVE_SMS;
 import static android.Manifest.permission.SEND_SMS;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS =0 ;
-    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS=1 ;
+    private static final Integer MY_PERMISSIONS_REQUEST_OK = 0;
     private String number;
     private String message;
     private Thread socketServerThread;
@@ -40,45 +45,47 @@ public class MainActivity extends AppCompatActivity {
 
 
         try {
-           // CharSequence ip = getIpAddress();
-           // code.setText(ip);
+            checkPermissions();
             runServer();
-            checkSelfPermission(SEND_SMS);
-            checkSelfPermission(READ_CONTACTS);
-            checkSelfPermission(ACCESS_WIFI_STATE);
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.READ_CONTACTS)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.READ_CONTACTS)) {
-                    //Cela signifie que la permission à déjà était
-                    //demandé et l'utilisateur l'a refusé
-                    //Vous pouvez aussi expliquer à l'utilisateur pourquoi
-                    //cette permission est nécessaire et la redemander
-                } else {
-                    //Sinon demander la permissiona
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.READ_CONTACTS},
-                            MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-                }
-            }
-
-
         } catch (Exception e){
             e.printStackTrace();
 
         }
 
         WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-        String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
 
+        WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+        int ip = wifiInfo.getIpAddress();
+        String ipAddress = Formatter.formatIpAddress(ip);
 
         TextView code = (TextView)findViewById(R.id.tVCode);
-        code.setText(IPtoCode(ip));
+        code.setText(IPtoCode(ipAddress));
+
     }
 
+    private void checkPermissions() {
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED))
 
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.SEND_SMS},
+                        MY_PERMISSIONS_REQUEST_OK);
+
+
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        } else {
+            Toast.makeText(this, "You must give all pemissions asked before using the app", Toast.LENGTH_LONG).show();
+        }
+
+    }
     private String IPtoCode(String ip) {
         String[] arrayBytes = ip.split("\\.");
         String code = new String();
@@ -136,40 +143,13 @@ public class MainActivity extends AppCompatActivity {
     public void send(String number, String message) {
         this.number = number;
         this.message = message;
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.SEND_SMS)) {
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.SEND_SMS},
-                        MY_PERMISSIONS_REQUEST_SEND_SMS);
-            }
-        } else {
-            SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(number, null, message, null, null);
-            Toast.makeText(getApplicationContext(), "SMS sent.",
-                    Toast.LENGTH_LONG).show();
-        }
 
+        SmsManager smsManager = SmsManager.getDefault();
+        smsManager.sendTextMessage(number, null, message, null, null);
+        Toast.makeText(getApplicationContext(), "SMS sent.",
+                Toast.LENGTH_LONG).show();
     }
-    @Override
-    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_SEND_SMS: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage(number, null, message, null, null);
-                    Toast.makeText(getApplicationContext(), "SMS sent.",
-                            Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(getApplicationContext(),
-                            "SMS faild, please try again.", Toast.LENGTH_LONG).show();
-                    return;
-                }
-            }
-        }
 
-    }
 
     public void setConnectionState() {
         TextView state = (TextView)findViewById(R.id.tVState);

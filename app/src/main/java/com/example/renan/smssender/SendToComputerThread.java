@@ -22,6 +22,7 @@ public class SendToComputerThread implements Runnable {
         out.println("DISPLAY");
         out.println(messageFrom);
         out.println(messageContent);
+        out.println("END_OF_DISPLAY");
         out.flush();
     }
 }
