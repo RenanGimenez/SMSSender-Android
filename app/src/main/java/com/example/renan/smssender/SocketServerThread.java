@@ -47,8 +47,9 @@ class SocketServerThread implements Runnable {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 new Thread(new Reader(in)).start();
+                sendMessages();
+                sendContacts();
 
-               sendContacts();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,7 +77,29 @@ class SocketServerThread implements Runnable {
         out.flush();
     }
 
-
+    private void sendMessages() {
+        LinkedList<Message> messageList  = mainActivity.getMessageList();
+        for (int i=0; i<messageList.size();++i){
+            Log.d("Message", messageList.get(i).toString());
+        }
+        out.println("MESSAGE_LIST");
+        out.println(messageList.size());
+        out.flush();
+        for (int i=0; i<messageList.size();++i){
+            out.println(messageList.get(i).getSender());
+            out.println(messageList.get(i).getReceiver());
+            out.println(messageList.get(i).getName());
+            out.println(messageList.get(i).getDate());
+            out.println(messageList.get(i).getContent());
+            out.println("END_OF_CONTENT");
+            out.println(messageList.get(i).getType());
+            out.flush();
+            Log.i("sent",messageList.get(i).toString());
+        }
+            /*objectOut.writeObject(contactList);
+            objectOut.flush();*/
+        out.flush();
+    }
     private void displayMessageFromComputer(String remoteMessage) {
         final String REMOTEMESSAGE = remoteMessage;
         mainActivity.runOnUiThread(new Runnable() {

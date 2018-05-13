@@ -4,11 +4,13 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.Telephony;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -16,11 +18,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.text.format.Formatter;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
@@ -73,9 +77,6 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.SEND_SMS},
                         MY_PERMISSIONS_REQUEST_OK);
-
-
-
     }
 
     @Override
@@ -184,6 +185,9 @@ public class MainActivity extends AppCompatActivity {
                         phoneNo = pCur.getString(pCur.getColumnIndex(
                                 ContactsContract.CommonDataKinds.Phone.NUMBER));
 
+                        if(!phoneNo.startsWith("+33"))
+                            phoneNo = "+33"+phoneNo.substring(1);
+
                     }
                     pCur.close();
                 }
@@ -198,8 +202,50 @@ public class MainActivity extends AppCompatActivity {
         return contacts;
     }
 
+    public LinkedList<Message> getMessageList(){
+        LinkedList<Message> messages = new LinkedList<>();
+        Uri mSmsinboxQueryUri = Telephony.Sms.Inbox.CONTENT_URI;
 
+        Cursor cursor1 = getContentResolver().query(mSmsinboxQueryUri,new String[] { "_id", "thread_id", "address", "person", "date","body", "type" }, null, null, null);
+        Log.d("COLUMNS", Arrays.toString(cursor1.getColumnNames()));
+        startManagingCursor(cursor1);
+        String[] columns = new String[] { "address", "person", "date", "body","type" };
+        if (cursor1.getCount() > 0) {
+            String count = Integer.toString(cursor1.getCount());
+            while (cursor1.moveToNext()){
 
+                String address = cursor1.getString(cursor1.getColumnIndex(columns[0]));
+                if(!address.startsWith("+33"))
+                    address = "+33"+address.substring(1);
+                String name = cursor1.getString(cursor1.getColumnIndex(columns[1]));
+                Long date = cursor1.getLong(cursor1.getColumnIndex(columns[2]));
+                String msg = cursor1.getString(cursor1.getColumnIndex(columns[3]));
+                String type = cursor1.getString(cursor1.getColumnIndex(columns[4]));
+                messages.add(new Message(address,"USER",name,date,msg,type));
+            }
+        }
+
+        Uri mSmssentQueryUri = Telephony.Sms.Sent.CONTENT_URI;
+        Cursor cursor2 = getContentResolver().query(mSmssentQueryUri,new String[] { "_id", "thread_id", "address", "person", "date","body", "type" }, null, null, null);
+        Log.d("COLUMNS", Arrays.toString(cursor2.getColumnNames()));
+        startManagingCursor(cursor2);
+        columns = new String[] { "address", "person", "date", "body","type" };
+        if (cursor2.getCount() > 0) {
+            String count2 = Integer.toString(cursor2.getCount());
+            while (cursor2.moveToNext()){
+                String address = cursor2.getString(cursor2.getColumnIndex(columns[0]));
+                if(!address.startsWith("+33"))
+                    address = "+33"+address.substring(1);
+                String name = cursor2.getString(cursor2.getColumnIndex(columns[1]));
+                Long date = cursor2.getLong(cursor2.getColumnIndex(columns[2]));
+                String msg = cursor2.getString(cursor2.getColumnIndex(columns[3]));
+                String type = cursor2.getString(cursor2.getColumnIndex(columns[4]));
+                messages.add(new Message("USER",address,name,date,msg,type));
+
+            }
+        }
+        return messages;
+    }
 
 }
 

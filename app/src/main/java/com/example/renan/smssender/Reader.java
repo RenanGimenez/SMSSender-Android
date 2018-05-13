@@ -43,7 +43,7 @@ public class Reader implements Runnable {
         final String MESSAGE = messageBuilder.toString().substring(0, messageBuilder.length()-1);
         mainActivity.runOnUiThread(new Runnable() {
             public void run() {
-                mainActivity.resetDisplay();
+               // mainActivity.resetDisplay();
                /* mainActivity.display("Send to: " + NUMBER);
                 mainActivity.display("Message: " + MESSAGE);*/
                 mainActivity.send(NUMBER,MESSAGE);

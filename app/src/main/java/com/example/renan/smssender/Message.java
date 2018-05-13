@@ -1,43 +1,60 @@
 package com.example.renan.smssender;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by renan on 09/01/2018.
  */
 
 public class Message {
-    private Object content;
-    private Contact sender;
-    private Contact reciever;
+    private String sender;
+    private String receiver;
+    private String name;
+    private Long date;
+    private String content;
+    private String type;
 
-
-    public Message(Object content, Contact sender, Contact reciever) {
-        this.content = content;
+    public Message(String sender, String receiver, String name, Long date, String content, String type) {
         this.sender = sender;
-        this.reciever = reciever;
+        this.receiver = receiver;
+        this.name = name;
+        this.date = date;
+        this.content = content;
+        this.type = type;
     }
 
+    public String getSender() {
 
-    public Object getContent() {
-        return content;
-    }
-
-
-    public Contact getSender() {
         return sender;
     }
 
-
-    public Contact getReciever() {
-        return reciever;
+    public String getReceiver() {
+        return receiver;
     }
 
-
-    public boolean hasBeenSent() {
-        return sender.isUser();
+    public String getName() {
+        return name;
     }
 
-    public boolean hasBeenRecieved() {
-        return reciever.isUser();
+    public Long getDate() {
+        return date;
     }
 
+    public String getFormatedDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss dd-MM-yyyy");
+        return sdf.format(new Date(date)).toString();
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String toString(){
+        return "sender: "+sender+"\treceiver: "+receiver+"\tname: "+name+"\tdate: "+getFormatedDate()+"\tmsg: "+content+"\ttype: "+type;
+    }
 }
