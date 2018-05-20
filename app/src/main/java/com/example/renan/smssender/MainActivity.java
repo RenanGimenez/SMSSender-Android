@@ -2,6 +2,7 @@ package com.example.renan.smssender;
 
 import android.Manifest;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -147,8 +148,16 @@ public class MainActivity extends AppCompatActivity {
 
         SmsManager smsManager = SmsManager.getDefault();
         smsManager.sendTextMessage(number, null, message, null, null);
+       
         Toast.makeText(getApplicationContext(), "SMS sent.",
                 Toast.LENGTH_LONG).show();
+
+        Uri mSmsinboxQueryUri = Telephony.Sms.Inbox.CONTENT_URI;
+        // { "address", "person", "date", "body","type" };
+
+        ContentValues values = new ContentValues();
+        values.put(,);
+       // getContentResolver().insert();
     }
 
 
@@ -244,6 +253,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+        
+       
         return messages;
     }
 

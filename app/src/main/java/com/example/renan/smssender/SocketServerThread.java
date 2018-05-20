@@ -59,7 +59,6 @@ class SocketServerThread implements Runnable {
     private void sendContacts() {
         LinkedList<Contact> contactList  = mainActivity.getContactList();
         for (int i=0; i<contactList.size();++i){
-            Log.d("Contact", contactList.get(i).toString());
             if(contactList.get(i).getNumTel().equals("") || contactList.get(i).getName().charAt(0) == '.'){
                 contactList.remove(i);
                 i--;
@@ -94,7 +93,6 @@ class SocketServerThread implements Runnable {
             out.println("END_OF_CONTENT");
             out.println(messageList.get(i).getType());
             out.flush();
-            Log.i("sent",messageList.get(i).toString());
         }
             /*objectOut.writeObject(contactList);
             objectOut.flush();*/
