@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -151,13 +152,6 @@ public class MainActivity extends AppCompatActivity {
        
         Toast.makeText(getApplicationContext(), "SMS sent.",
                 Toast.LENGTH_LONG).show();
-
-        Uri mSmsinboxQueryUri = Telephony.Sms.Inbox.CONTENT_URI;
-        // { "address", "person", "date", "body","type" };
-
-        ContentValues values = new ContentValues();
-        values.put(,);
-       // getContentResolver().insert();
     }
 
 
