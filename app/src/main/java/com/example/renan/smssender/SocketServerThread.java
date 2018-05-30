@@ -12,6 +12,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+
 /**
  * Created by Renan on 21/11/2017.
  */
@@ -31,10 +34,11 @@ class SocketServerThread implements Runnable {
     public void run() {
 
         try {
-            ServerSocket socketserver = new ServerSocket(PORT);
+            ServerSocket socketServer = new ServerSocket(PORT);
             raiseToast("I am ready to accept my favorite client!");
             while(true) {
-                Socket socket = socketserver.accept();
+                System.setProperty("https.protocols", "SSL");
+                Socket socket = socketServer.accept();
                 mainActivity.runOnUiThread(new Runnable() {
                     public void run() {
                         mainActivity.setConnectionState();
@@ -51,7 +55,7 @@ class SocketServerThread implements Runnable {
                 sendContacts();
 
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -148,8 +149,14 @@ public class MainActivity extends AppCompatActivity {
         this.message = message;
 
         SmsManager smsManager = SmsManager.getDefault();
-        smsManager.sendTextMessage(number, null, message, null, null);
-       
+        ArrayList<String> parts = smsManager.divideMessage(message);
+        int numParts = parts.size();
+
+        if (numParts > 1)
+            smsManager.sendMultipartTextMessage(number, null, parts, null, null);
+        else
+            smsManager.sendTextMessage(number, null, message, null, null);
+
         Toast.makeText(getApplicationContext(), "SMS sent.",
                 Toast.LENGTH_LONG).show();
     }
@@ -218,8 +225,6 @@ public class MainActivity extends AppCompatActivity {
             while (cursor1.moveToNext()){
 
                 String address = cursor1.getString(cursor1.getColumnIndex(columns[0]));
-                if(!address.startsWith("+33"))
-                    address = "+33"+address.substring(1);
                 String name = cursor1.getString(cursor1.getColumnIndex(columns[1]));
                 Long date = cursor1.getLong(cursor1.getColumnIndex(columns[2]));
                 String msg = cursor1.getString(cursor1.getColumnIndex(columns[3]));
@@ -237,8 +242,6 @@ public class MainActivity extends AppCompatActivity {
             String count2 = Integer.toString(cursor2.getCount());
             while (cursor2.moveToNext()){
                 String address = cursor2.getString(cursor2.getColumnIndex(columns[0]));
-                if(!address.startsWith("+33"))
-                    address = "+33"+address.substring(1);
                 String name = cursor2.getString(cursor2.getColumnIndex(columns[1]));
                 Long date = cursor2.getLong(cursor2.getColumnIndex(columns[2]));
                 String msg = cursor2.getString(cursor2.getColumnIndex(columns[3]));
